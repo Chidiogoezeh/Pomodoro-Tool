@@ -1,1 +1,14 @@
 import time
+
+def countdown_25_minutes():
+  """Counts down from 25 minutes to 0, printing the remaining time each minute."""
+  minutes = 25
+  while minutes >= 0:
+    print(f"Remaining time: {minutes} minutes")
+    time.sleep(60)  # Wait for 1 minute
+    minutes -= 1
+  print("Time's up!")
+
+if __name__ == "__main__":
+  countdown_25_minutes()
+ 
