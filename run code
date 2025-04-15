@@ -12,3 +12,18 @@ def countdown_25_minutes():
 if __name__ == "__main__":
   countdown_25_minutes()
  
+
+
+Write a python function with a count down of 25 minutes
+
+Explanation:
+
+Import time: This line imports the time module, which provides functions for time-related operations, including pausing execution.
+Define countdown_25_minutes(): This defines a function that encapsulates the countdown logic.
+Initialize minutes: The variable minutes is initialized to 25, representing the starting countdown time.
+while loop: The while minutes >= 0: loop continues as long as the minutes variable is greater than or equal to 0.
+Print remaining time: Inside the loop, print(f"Remaining time: {minutes} minutes") displays the current remaining time in minutes. The f-string is used for easy formatting.
+time.sleep(60): This is the crucial part for the countdown. time.sleep(60) pauses the execution of the program for 60 seconds (which is 1 minute).
+Decrement minutes: After the 1-minute pause, minutes -= 1 reduces the minutes counter by 1.
+"Time's up!" message: Once the while loop finishes (when minutes becomes -1), the print("Time's up!") statement is executed.
+if __name__ == "__main__":: This block ensures that the countdown_25_minutes() function is only called when the script is run directly (not when it's imported as a module into another script).
