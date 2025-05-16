@@ -1,0 +1,4 @@
+# write a python program to calculate the length of the string "Twitter"  
+my_string = "Twitter"
+string_length = len(my_string)
+print(f"The length of the string'{my_string}' is: {string_length}") 
