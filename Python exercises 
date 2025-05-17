@@ -1,4 +1,25 @@
-# write a python program to calculate the length of the string "Twitter"  
+# write a python program to calculate the length of the string "Twitter"
 my_string = "Twitter"
 string_length = len(my_string)
-print(f"The length of the string'{my_string}' is: {string_length}") 
+print(f"The length of the string'{my_string}' is: {string_length}")
+
+#these steps could make the code more flexible
+#wrap the code in a function first
+def twitter_counter():
+    my_string = "Twitter"
+    string_length = len(my_string)
+print(f"The length of the string'{my_string}' is: {string_length}")
+twitter_counter()
+# Here the code run just fine like the first code but you can now call a function called twitter_counter to do the job.
+#there is still a limitation, twitter is not the only word in the world right. so we have to develop it further.
+
+##case 3 making the function even more flexible. 
+#add the word as a argument in the function 
+def word_counter(word):
+    my_string = word
+    string_length = len(my_string)
+    print(f"The length of the string'{my_string}' is: {string_length}")
+word_counter("Python do dey make me mad sha")
+
+#This solution seems more flexible than solution 1 and 2. 
+#Also you could call the function with the word. eg word_counter("Nathaniel"), word_counter("Chidiogo"), word_counter("Python do dey make me mad sha")
