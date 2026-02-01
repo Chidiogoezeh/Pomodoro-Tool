@@ -1,25 +1,69 @@
+/* --- Global Reset & Body --- */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
     background-color: #f4f4f9;
+    color: #333;
 }
 
-.pomodoro-app {
-    background-color: #fff;
+/* --- Container Layouts --- */
+.pomodoro-app, .auth-container {
+    background-color: #ffffff;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     text-align: center;
     max-width: 400px;
     width: 90%;
 }
 
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
 h1 {
-    color: #c0392b; /* Pomodoro Red */
+    color: #c0392b;
+    margin: 0;
+}
+
+/* --- Authentication Styles --- */
+.auth-container h1 {
+    margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
+    font-size: 14px;
+}
+
+.auth-container p {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.auth-container a {
+    color: #c0392b;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* --- Timer Mode Selector --- */
+.timer-mode-selector {
+    margin-bottom: 20px;
 }
 
 .timer-mode-selector button {
@@ -38,45 +82,122 @@ h1 {
     font-weight: bold;
 }
 
+/* --- Timer Display --- */
 .timer-display {
     font-size: 80px;
-    margin: 30px 0;
-    color: #333;
+    font-weight: bold;
+    margin: 20px 0;
+    color: #2c3e50;
 }
 
-.timer-controls button {
-    padding: 10px 20px;
-    margin: 5px;
-    border: none;
-    border-radius: 6px;
+/* --- Buttons & Controls --- */
+button {
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: opacity 0.2s, transform 0.1s;
+    border: none;
+    border-radius: 6px;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.primary-btn {
+    background-color: #c0392b;
+    color: white;
+    padding: 12px;
+    width: 100%;
+    font-weight: bold;
 }
 
 #start-btn {
-    background-color: #27ae60; /* Green */
+    background-color: #27ae60;
     color: white;
+    padding: 10px 25px;
 }
 
 #pause-btn {
-    background-color: #f39c12; /* Orange */
+    background-color: #f39c12;
     color: white;
+    padding: 10px 25px;
 }
 
 #reset-btn {
-    background-color: #95a5a6; /* Gray */
+    background-color: #95a5a6;
     color: white;
+    padding: 10px 25px;
 }
 
+#logout-btn {
+    background-color: transparent;
+    color: #7f8c8d;
+    font-size: 12px;
+    padding: 5px 10px;
+    border: 1px solid #bdc3c7;
+}
+
+#logout-btn:hover {
+    background-color: #ecf0f1;
+    color: #c0392b;
+}
+
+/* --- Task List Section --- */
 .task-list {
-    margin-top: 20px;
+    margin-top: 30px;
     padding-top: 15px;
     border-top: 1px solid #eee;
     text-align: left;
 }
 
+.task-list h2 {
+    font-size: 18px;
+    color: #7f8c8d;
+}
+
+#add-task-form {
+    margin-bottom: 15px;
+}
+
 #tasks-container {
     list-style: none;
     padding: 0;
+}
+
+#tasks-container li {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+#tasks-container li input[type="checkbox"] {
+    margin-right: 12px;
+    cursor: pointer;
+}
+
+#tasks-container li label {
+    cursor: pointer;
+    flex-grow: 1;
+}
+
+/* --- State Classes --- */
+.hidden {
+    display: none !important;
+}
+
+.completed label {
+    text-decoration: line-through;
+    color: #bdc3c7;
+}
+
+/* --- Visual Alert for Finish --- */
+.time-up {
+    animation: flash-red 1s infinite;
+}
+
+@keyframes flash-red {
+    0% { background-color: #f4f4f9; }
+    50% { background-color: #ffcccc; }
+    100% { background-color: #f4f4f9; }
 }
