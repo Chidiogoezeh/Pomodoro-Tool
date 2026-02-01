@@ -1,8 +1,9 @@
-const express = require('express');
-const { logSession } = require('../controllers/sessionController');
+import express from 'express';
+import { logSession } from '../controllers/sessionController.js';
+import { protect } from '../middleware/auth.js';
+
 const router = express.Router();
 
-router.route('/')
-    .post(logSession); // POST /api/v1/sessions
+router.post('/', protect, logSession);
 
-module.exports = router;
+export default router;

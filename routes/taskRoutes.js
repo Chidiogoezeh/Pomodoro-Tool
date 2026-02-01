@@ -1,13 +1,11 @@
-// src/routes/taskRoutes.js
-const express = require('express');
-const { getTasks, addTask, updateTask } = require('../controllers/taskController');
+import express from 'express';
+import { getTasks, addTask, updateTask } from '../controllers/taskController.js';
+import { protect } from '../middleware/auth.js';
+
 const router = express.Router();
 
-router.route('/')
-    .get(getTasks)    // GET /api/v1/tasks
-    .post(addTask);   // POST /api/v1/tasks
+router.use(protect); // All task routes protected
+router.route('/').get(getTasks).post(addTask);
+router.route('/:id').put(updateTask);
 
-router.route('/:id')
-    .put(updateTask); // PUT /api/v1/tasks/:id
-
-module.exports = router;
+export default router;
