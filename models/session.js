@@ -1,22 +1,10 @@
-// src/models/Session.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const SessionSchema = new mongoose.Schema({
-    duration: {
-        type: Number,
-        required: true,
-        min: [1, 'Duration must be at least 1 minute']
-    },
-    type: {
-        type: String,
-        enum: ['pomodoro', 'shortBreak', 'longBreak'],
-        required: true
-    },
-    completedAt: {
-        type: Date,
-        default: Date.now
-    }
-    // In a real app, you'd add: userId: { type: mongoose.Schema.ObjectId, ref: 'User' }
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    duration: { type: Number, required: true },
+    type: { type: String, enum: ['pomodoro', 'shortBreak', 'longBreak'], required: true },
+    completedAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Session', SessionSchema);
+export default mongoose.model('Session', SessionSchema);
