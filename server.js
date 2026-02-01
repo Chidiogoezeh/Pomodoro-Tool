@@ -2,7 +2,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors'); // Essential for client-server communication
-const connectDB = require('./src/config/db');
+const connectDB = require('./config/db');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -25,8 +25,8 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // --- Routes ---
-const taskRoutes = require('./src/routes/taskRoutes');
-const sessionRoutes = require('./src/routes/sessionRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const sessionRoutes = require('./routes/sessionRoutes');
 
 // Mount routes
 // API base path: /api/v1
