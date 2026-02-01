@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="pomodoro-app">
+        <h1>Pomodoro Timer</h1>
+
+        <div class="timer-mode-selector">
+            <button id="pomodoro-btn" class="active">Pomodoro</button>
+            <button id="short-break-btn">Short Break</button>
+            <button id="long-break-btn">Long Break</button>
+        </div>
+
+        <div class="timer-display">
+            <span id="minutes">25</span>:<span id="seconds">00</span>
+        </div>
+
+        <div class="timer-controls">
+            <button id="start-btn">Start</button>
+            <button id="pause-btn" style="display:none;">Pause</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+
+        <div class="session-counter">
+            <p>Completed Pomodoros: <span id="session-count">0</span></p>
+        </div>
+
+        <section class="task-list">
+            <h2>Tasks</h2>
+            <ul id="tasks-container">
+                <li><input type="checkbox"> Example Task 1 (Database interaction required)</li>
+                <li><input type="checkbox"> Example Task 2</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
