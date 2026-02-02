@@ -1,95 +1,81 @@
-Pomodoro Timer, Full-Stack Application
+Pomodoro Timer
+A full-stack productivity tool built with Node.js, Express, and MongoDB, featuring secure user authentication, persistent task management, and automated session logging.
 
-This project is a fully functional Pomodoro Timer built using the MERN-adjacent stack: HTML, Vanilla CSS, Vanilla JavaScript for the front-end, and Node.js/Express with MongoDB for the back-end persistence.
+Key Features
+Secure Authentication: User registration and login powered by JWT (JSON Web Tokens) and bcryptjs password hashing.
 
-Features
+Production Security: Integrated Helmet.js for secure HTTP headers and strictly configured CORS policies.
 
-Customizable Timer Modes: Pomodoro (25 min), Short Break (5 min), and Long Break (15 min).
-Session Tracking: Automatically logs completed Pomodoro sessions to the database.
-Task Management: Basic CRUD functionality (Create/Read/Update) for managing tasks.
-Mode Cycling: Automatically switches to a break after a Pomodoro session.
-Persistent Data: Task lists and session history are saved in MongoDB.
+Smart Timer: Automated cycling between Pomodoro (25m), Short Break (5m), and Long Break (15m) modes.
+
+Validated Data: Strict input validation using express-validator to prevent XSS and Injection attacks.
+
+Task Management: Private, user-specific task lists with persistent database storage.
 
 Tech Stack
 
-Component   Technology                      Role
+Component,  Technology,                             Role
 
-Front-End   HTML, Vanilla CSS, Vanilla JS   User interface, timer logic, and API consumption.
+Front-End,  "HTML5, Vanilla CSS, ES6 JavaScript",   Zero-dependency UI; secure DOM manipulation (No innerHTML).
 
-Back-End    Node.js, Express.js             RESTful API creation, serving static files, and database communication.
+Back-End,   Node.js (ES6 Modules),                  Modular API architecture with secure routing.
 
-Database    MongoDB (via Mongoose)          Persistent storage for tasks and Pomodoro session logs.
+Security,   "JWT, Bcrypt, Helmet, Express-Validator",Protects user data and prevents common web vulnerabilities.
 
-Development dotenv, nodemon, cors           Configuration, auto-reloading, and Cross-Origin Resource Sharing.
-
-Getting Started
-
-Follow these steps to get the application running on your local machine.
-1. Prerequisites
-You must have the following installed:
-Node.js (LTS version recommended)
-npm (comes with Node.js)
-Access to a MongoDB instance (local or cloud-based like MongoDB Atlas).
-
-2. Installation
-Clone the repository:
-git clone [Your Repository URL Here] pomodoro-app
-cd pomodoro-app
-
-Install back-end dependencies:
-npm install
-
-3. Configuration
-Create Environment File:In the root directory of the project, create a file named .env.
-
-Add Configuration Variables:Populate the .env file with your specific environment details:
-PORT=3000
-# Replace the placeholders with your actual MongoDB connection string
-MONGO_URI="mongodb+srv://<username>:<password>@cluster0.abcde.mongodb.net/<dbname>?retryWrites=true&w=majority"
-
-4. Running the App
-Start the server:
-npm run dev
-# Alternatively, for production: npm start
-
-The server will start on the configured port (default: 3000). You should see messages confirming the database connection and server status.
-Access the App:Open your web browser and navigate to:
-http://localhost:3000
-
+Database,   MongoDB & Mongoose,                     "Document-based storage for Users, Tasks, and Sessions."
 
 Project Structure
+The src folder has been removed in favor of a clean, root-level modular architecture:
 
-The application follows a standard Node.js project structure, separating static assets from server logic.pomodoro-app/
-├── node_modules/         
-├── .env                  
-├── package.json          
-├── server.js             # Express app entry point, connecting middleware and routes
-|
-├── public/               # Client-Side Assets (HTML, CSS, Vanilla JS)
-│   ├── index.html        # Main application structure
-│   ├── style.css         # Styling
-│   └── script.js         # Core timer logic and API interactions
-|
-└── src/                  # Server-Side Logic
-    ├── config/           # Database configuration
-    │   └── db.js         # MongoDB connection (Mongoose)
-    |
-    ├── controllers/      # Business logic and request handling
-    │   ├── taskController.js    
-    │   └── sessionController.js 
-    |
-    ├── models/           # Mongoose Schemas (Database structure)
-    │   ├── Task.js       
-    │   └── Session.js    
-    |
-    └── routes/           # API Endpoint Definitions
-        ├── taskRoutes.js    
-        └── sessionRoutes.js 
+pomodoro-tool/
+├── config/             # DB Connection & Passport settings
+├── controllers/        # Business logic (Auth, Tasks, Sessions)
+├── middleware/         # JWT Protection & Validation logic
+├── models/             # Mongoose Schemas (User, Task, Session)
+├── public/             # Static Assets
+│   ├── css/            # Vanilla CSS (Modern UI)
+│   ├── js/             # ES6 Logic (authUi.js, script.js)
+│   ├── login.html      # Authentication Page
+│   └── index.html      # Protected App UI
+├── routes/             # API Endpoint definitions
+├── .env                # Secrets & Configuration
+├── server.js           # Production entry point
+└── package.json        # Dependencies & ES6 Module config
 
-Security Considerations
+Installation & Setup
+1. Prerequisites
+Node.js (v18.0.0+ recommended)
 
-This blueprint includes basic security, but for a production-ready application, consider adding:
-Authentication: Implement User Registration/Login using JWT (JSON Web Tokens) or session management.
-Input Validation: Use libraries like express-validator to ensure all incoming data conforms to expected formats and prevents injection attacks.
-Security Headers: Use the helmet middleware in server.js to secure HTTP headers.
-CORS Restriction: Restrict the cors() settings in server.js to explicitly allow only your front-end domain.
+MongoDB (Local instance or Atlas Cluster)
+
+2. Installation
+
+git clone https://github.com/Chidiogoezeh/Pomodoro-Tool.git
+cd pomodoro-app
+npm install
+
+3. Environment Configuration
+Create a .env file in the root directory and populate it with the following:
+
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_jwt_key
+FRONTEND_URL=http://localhost:5000
+
+4. Running the Application
+Development (Auto-reload): npm run dev
+
+Production: npm start
+
+Access the app at http://localhost:5000.
+
+Security Implementations
+This application is built with a "Security First" mindset:
+
+JWT Protection: All Task and Session routes require a valid Bearer token.
+
+Password Hashing: Passwords are salted and hashed 10 times before database entry.
+
+Data Sanitization: Mongoose Schemas and Express-Validator ensure no malicious scripts enter the DB.
+
+No Inline Scripts: Following strict Content Security Policy (CSP) guidelines.
