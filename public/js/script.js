@@ -11,75 +11,153 @@ let timeRemaining = TIME_SETTINGS[currentMode];
 let isRunning = false;
 let intervalId = null;
 
-// DOM Elements
-const minutesEl = document.getElementById('minutes');
-const secondsEl = document.getElementById('seconds');
-const tasksContainer = document.getElementById('tasks-container');
-
-// Helper to create task elements safely
-const createTaskElement = (task) => {
-    const li = document.createElement('li');
-    const checkbox = document.createElement('input');
-    const label = document.createElement('label');
-
-    checkbox.type = 'checkbox';
-    checkbox.id = `task-${task._id}`;
-    checkbox.checked = task.isCompleted;
-    
-    label.setAttribute('for', `task-${task._id}`);
-    label.textContent = task.description;
-
-    if (task.isCompleted) {
-        li.classList.add('completed');
-    }
-
-    checkbox.addEventListener('change', async (e) => {
-        await toggleTaskStatus(task._id, e.target.checked);
-        li.classList.toggle('completed', e.target.checked);
-    });
-
-    li.appendChild(checkbox);
-    li.appendChild(label);
-    return li;
-};
-
-async function fetchTasks() {
+// --- Authorized Fetch Wrapper ---
+// Standardizes API calls and handles expired tokens globally
+async function apiRequest(endpoint, options = {}) {
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = '/login.html';
         return;
     }
 
-    try {
-        const res = await fetch(`${API_URL}/tasks`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.success) {
-            tasksContainer.textContent = ''; // Clear container
-            data.data.forEach(task => {
-                tasksContainer.appendChild(createTaskElement(task));
-            });
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         }
+    };
+
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, { ...defaultOptions, ...options });
+        
+        // If token is expired or invalid
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        return await response.json();
     } catch (error) {
-        console.error('Fetch error:', error);
+        console.error(`[${new Date().toISOString()}] FETCH ERROR:`, error);
     }
 }
 
-// Initializing event listeners
-document.getElementById('start-btn').addEventListener('click', () => {
-    if (!isRunning) {
-        isRunning = true;
-        intervalId = setInterval(tick, 1000);
-        toggleControls(true);
+// --- Timer Logic ---
+function updateDisplay() {
+    const mins = Math.floor(timeRemaining / 60);
+    const secs = timeRemaining % 60;
+    document.getElementById('minutes').textContent = mins.toString().padStart(2, '0');
+    document.getElementById('seconds').textContent = secs.toString().padStart(2, '0');
+    document.title = `${mins}:${secs.toString().padStart(2, '0')} - Pomodoro`;
+}
+
+function tick() {
+    if (timeRemaining > 0) {
+        timeRemaining--;
+        updateDisplay();
+    } else {
+        clearInterval(intervalId);
+        isRunning = false;
+        handleTimerComplete();
     }
+}
+
+async function handleTimerComplete() {
+    // Log session to DB
+    await apiRequest('/sessions', {
+        method: 'POST',
+        body: JSON.stringify({ duration: TIME_SETTINGS[currentMode], type: currentMode })
+    });
+
+    alert(`${currentMode.replace(/([A-Z])/g, ' $1')} finished!`);
+    resetTimer();
+}
+
+// --- Task Logic ---
+const tasksContainer = document.getElementById('tasks-container');
+
+const createTaskElement = (task) => {
+    const li = document.createElement('li');
+    li.className = task.isCompleted ? 'completed' : '';
+    
+    li.innerHTML = `
+        <input type="checkbox" id="task-${task._id}" ${task.isCompleted ? 'checked' : ''}>
+        <label for="task-${task._id}">${task.description}</label>
+    `;
+
+    li.querySelector('input').addEventListener('change', async (e) => {
+        const data = await apiRequest(`/tasks/${task._id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ isCompleted: e.target.checked })
+        });
+        if (data?.success) li.classList.toggle('completed', e.target.checked);
+    });
+
+    return li;
+};
+
+async function fetchTasks() {
+    const data = await apiRequest('/tasks');
+    if (data?.success) {
+        tasksContainer.innerHTML = '';
+        data.data.forEach(task => tasksContainer.appendChild(createTaskElement(task)));
+    }
+}
+
+// --- Event Listeners & Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    fetchTasks();
+    updateDisplay();
+
+    document.getElementById('start-btn').addEventListener('click', () => {
+        if (!isRunning) {
+            isRunning = true;
+            intervalId = setInterval(tick, 1000);
+            toggleControls(true);
+        }
+    });
+
+    document.getElementById('pause-btn').addEventListener('click', () => {
+        isRunning = false;
+        clearInterval(intervalId);
+        toggleControls(false);
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', resetTimer);
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+    });
+
+    // Mode selectors
+    ['pomodoro', 'shortBreak', 'longBreak'].forEach(mode => {
+        const btnId = mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase()) + "-btn";
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', () => switchMode(mode));
+        }
+    });
 });
 
-function toggleControls(running) {
-    const startBtn = document.getElementById('start-btn');
-    const pauseBtn = document.getElementById('pause-btn');
-    startBtn.classList.toggle('hidden', running);
-    pauseBtn.classList.toggle('hidden', !running);
+function resetTimer() {
+    clearInterval(intervalId);
+    isRunning = false;
+    timeRemaining = TIME_SETTINGS[currentMode];
+    toggleControls(false);
+    updateDisplay();
 }
 
-// Tick and UI updates... (rest of logic follows ES6)
+function switchMode(mode) {
+    currentMode = mode;
+    // Update active UI button
+    document.querySelectorAll('.timer-mode-selector button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`${mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase())}-btn`).classList.add('active');
+    resetTimer();
+}
+
+function toggleControls(running) {
+    document.getElementById('start-btn').classList.toggle('hidden', running);
+    document.getElementById('pause-btn').classList.toggle('hidden', !running);
+}
