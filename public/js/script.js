@@ -12,7 +12,6 @@ let isRunning = false;
 let intervalId = null;
 
 // --- Authorized Fetch Wrapper ---
-// Standardizes API calls and handles expired tokens globally
 async function apiRequest(endpoint, options = {}) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -30,7 +29,6 @@ async function apiRequest(endpoint, options = {}) {
     try {
         const response = await fetch(`${API_URL}${endpoint}`, { ...defaultOptions, ...options });
         
-        // If token is expired or invalid
         if (response.status === 401) {
             localStorage.removeItem('token');
             window.location.href = '/login.html';
@@ -43,7 +41,7 @@ async function apiRequest(endpoint, options = {}) {
     }
 }
 
-// --- Timer Logic ---
+// --- Timer Display Functions ---
 function updateDisplay() {
     const mins = Math.floor(timeRemaining / 60);
     const secs = timeRemaining % 60;
@@ -52,31 +50,16 @@ function updateDisplay() {
     document.title = `${mins}:${secs.toString().padStart(2, '0')} - Pomodoro`;
 }
 
-function tick() {
-    if (timeRemaining > 0) {
-        timeRemaining--;
-        updateDisplay();
-    } else {
-        clearInterval(intervalId);
-        isRunning = false;
-        handleTimerComplete();
+function toggleControls(running) {
+    const startBtn = document.getElementById('start-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    if (startBtn && pauseBtn) {
+        startBtn.classList.toggle('hidden', running);
+        pauseBtn.classList.toggle('hidden', !running);
     }
 }
 
-async function handleTimerComplete() {
-    // Log session to DB
-    await apiRequest('/sessions', {
-        method: 'POST',
-        body: JSON.stringify({ duration: TIME_SETTINGS[currentMode], type: currentMode })
-    });
-
-    alert(`${currentMode.replace(/([A-Z])/g, ' $1')} finished!`);
-    resetTimer();
-}
-
-// --- Task Logic ---
-const tasksContainer = document.getElementById('tasks-container');
-
+// --- Task UI Helper ---
 const createTaskElement = (task) => {
     const li = document.createElement('li');
     li.className = task.isCompleted ? 'completed' : '';
@@ -91,29 +74,39 @@ const createTaskElement = (task) => {
             method: 'PUT',
             body: JSON.stringify({ isCompleted: e.target.checked })
         });
-        if (data?.success) li.classList.toggle('completed', e.target.checked);
+        if (data?.success) {
+            li.classList.toggle('completed', e.target.checked);
+            console.log(`[${new Date().toISOString()}] INFO: Task ${task._id} status updated.`);
+        }
     });
 
     return li;
 };
 
-async function fetchTasks() {
-    const data = await apiRequest('/tasks');
-    if (data?.success) {
-        tasksContainer.innerHTML = '';
-        data.data.forEach(task => tasksContainer.appendChild(createTaskElement(task)));
-    }
-}
-
-// --- Event Listeners & Initialization ---
+// --- Core Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    fetchTasks();
-    updateDisplay();
+    const tasksContainer = document.getElementById('tasks-container');
+    const addTaskForm = document.getElementById('add-task-form');
+    const taskInput = document.getElementById('task-input');
 
+    // 1. Initial Load
+    updateDisplay();
+    fetchTasks();
+
+    // 2. Timer Actions
     document.getElementById('start-btn').addEventListener('click', () => {
         if (!isRunning) {
             isRunning = true;
-            intervalId = setInterval(tick, 1000);
+            intervalId = setInterval(() => {
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                    updateDisplay();
+                } else {
+                    clearInterval(intervalId);
+                    isRunning = false;
+                    handleTimerComplete();
+                }
+            }, 1000);
             toggleControls(true);
         }
     });
@@ -126,66 +119,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('reset-btn').addEventListener('click', resetTimer);
 
+    // 3. Mode Selectors
+    ['pomodoro', 'shortBreak', 'longBreak'].forEach(mode => {
+        const btnId = mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase()) + "-btn";
+        const btn = document.getElementById(btnId);
+        if (btn) btn.addEventListener('click', () => switchMode(mode));
+    });
+
+    // 4. Task Management
+    if (addTaskForm) {
+        addTaskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const description = taskInput.value.trim();
+            if (!description) return;
+
+            const data = await apiRequest('/tasks', {
+                method: 'POST',
+                body: JSON.stringify({ description })
+            });
+
+            if (data?.success) {
+                tasksContainer.appendChild(createTaskElement(data.data));
+                taskInput.value = '';
+            }
+        });
+    }
+
+    // 5. Auth Actions
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
         window.location.href = '/login.html';
     });
 
-    // Mode selectors
-    ['pomodoro', 'shortBreak', 'longBreak'].forEach(mode => {
-        const btnId = mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase()) + "-btn";
-        const btn = document.getElementById(btnId);
-        if (btn) {
-            btn.addEventListener('click', () => switchMode(mode));
-        }
-    });
-});
-
-function resetTimer() {
-    clearInterval(intervalId);
-    isRunning = false;
-    timeRemaining = TIME_SETTINGS[currentMode];
-    toggleControls(false);
-    updateDisplay();
-}
-
-function switchMode(mode) {
-    currentMode = mode;
-    // Update active UI button
-    document.querySelectorAll('.timer-mode-selector button').forEach(b => b.classList.remove('active'));
-    document.getElementById(`${mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase())}-btn`).classList.add('active');
-    resetTimer();
-}
-
-function toggleControls(running) {
-    document.getElementById('start-btn').classList.toggle('hidden', running);
-    document.getElementById('pause-btn').classList.toggle('hidden', !running);
-}
-
-// --- Add Task Logic ---
-const addTaskForm = document.getElementById('add-task-form');
-const taskInput = document.getElementById('task-input');
-
-if (addTaskForm) {
-    addTaskForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const description = taskInput.value.trim();
-        if (!description) return;
-
-        // Send to backend
-        const data = await apiRequest('/tasks', {
-            method: 'POST',
-            body: JSON.stringify({ description })
-        });
-
+    // --- Inner Functions ---
+    async function fetchTasks() {
+        const data = await apiRequest('/tasks');
         if (data?.success) {
-            // Append the new task to the list
-            tasksContainer.appendChild(createTaskElement(data.data));
-            taskInput.value = ''; // Clear input
-            console.log(`[${new Date().toISOString()}] INFO: New task added via UI`);
-        } else {
-            alert(data.error || 'Failed to add task');
+            tasksContainer.innerHTML = '';
+            data.data.forEach(task => tasksContainer.appendChild(createTaskElement(task)));
         }
-    });
-}
+    }
+
+    async function handleTimerComplete() {
+        await apiRequest('/sessions', {
+            method: 'POST',
+            body: JSON.stringify({ duration: TIME_SETTINGS[currentMode], type: currentMode })
+        });
+        alert(`${currentMode} finished! Session logged.`);
+        resetTimer();
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.timer-mode-selector button').forEach(b => b.classList.remove('active'));
+        const activeBtnId = `${mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase())}-btn`;
+        document.getElementById(activeBtnId).classList.add('active');
+        resetTimer();
+    }
+
+    function resetTimer() {
+        clearInterval(intervalId);
+        isRunning = false;
+        timeRemaining = TIME_SETTINGS[currentMode];
+        toggleControls(false);
+        updateDisplay();
+    }
+});
