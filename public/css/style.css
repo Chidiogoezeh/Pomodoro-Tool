@@ -1,5 +1,5 @@
 * {
-    box-sizing: border-box; /* Applied globally for better layout control */
+    box-sizing: border-box;
 }
 
 body {
@@ -37,10 +37,6 @@ h1 {
 }
 
 /* --- Authentication & Form Styles --- */
-.auth-container h1 {
-    margin-bottom: 20px;
-}
-
 input[type="text"],
 input[type="email"],
 input[type="password"] {
@@ -100,7 +96,7 @@ input[type="password"] {
     font-weight: bold;
     margin: 20px 0;
     color: #2c3e50;
-    font-variant-numeric: tabular-nums; /* Prevents numbers from jumping */
+    font-variant-numeric: tabular-nums;
 }
 
 /* --- Buttons & Controls --- */
@@ -116,6 +112,11 @@ button:active {
     transform: scale(0.98);
 }
 
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .primary-btn {
     background-color: #c0392b;
     color: white;
@@ -126,23 +127,9 @@ button:active {
     text-decoration: none;
 }
 
-#start-btn {
-    background-color: #27ae60;
-    color: white;
-    padding: 10px 25px;
-}
-
-#pause-btn {
-    background-color: #f39c12;
-    color: white;
-    padding: 10px 25px;
-}
-
-#reset-btn {
-    background-color: #95a5a6;
-    color: white;
-    padding: 10px 25px;
-}
+#start-btn { background-color: #27ae60; color: white; padding: 10px 25px; }
+#pause-btn { background-color: #f39c12; color: white; padding: 10px 25px; }
+#reset-btn { background-color: #95a5a6; color: white; padding: 10px 25px; }
 
 #logout-btn {
     background-color: transparent;
@@ -152,23 +139,12 @@ button:active {
     border: 1px solid #bdc3c7;
 }
 
-#logout-btn:hover {
-    background-color: #ecf0f1;
-    color: #c0392b;
-}
-
 /* --- Task List Section --- */
 .task-list {
     margin-top: 30px;
     padding-top: 15px;
     border-top: 1px solid #eee;
     text-align: left;
-}
-
-.task-list h2 {
-    font-size: 18px;
-    color: #7f8c8d;
-    margin-bottom: 10px;
 }
 
 #tasks-container {
@@ -185,32 +161,41 @@ button:active {
     border-bottom: 1px solid #f9f9f9;
 }
 
-#tasks-container li input[type="checkbox"] {
-    margin-right: 12px;
-    cursor: pointer;
-}
-
 #tasks-container li label {
     cursor: pointer;
     flex-grow: 1;
     font-size: 15px;
 }
 
-/* --- State Classes --- */
-.hidden {
-    display: none !important;
-}
+/* --- State & Utility Classes --- */
+.hidden { display: none !important; }
 
 .completed label {
     text-decoration: line-through;
     color: #bdc3c7;
 }
 
-/* --- 404 & Error Page --- */
-.error-page {
-    margin: auto; /* Centers in flex body */
+.message-box {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-align: center;
 }
 
+.message-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* --- 404 & Animations --- */
 .error-code {
     font-size: 100px;
     color: #c0392b;
@@ -223,15 +208,4 @@ button:active {
     display: inline-block;
     width: auto;
     padding: 10px 25px;
-}
-
-/* --- Animations --- */
-.time-up {
-    animation: flash-red 1s infinite;
-}
-
-@keyframes flash-red {
-    0% { background-color: #f4f4f9; }
-    50% { background-color: #ffcccc; }
-    100% { background-color: #f4f4f9; }
 }

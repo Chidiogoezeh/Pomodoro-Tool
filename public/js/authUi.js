@@ -1,6 +1,16 @@
 // Declare ONCE at the top
 const API_URL = '/api/v1/auth';
 
+// Helper function to display messages on the page instead of alerts
+function showMessage(text, isError = true) {
+    const messageBox = document.getElementById('auth-message');
+    if (!messageBox) return;
+
+    messageBox.textContent = text;
+    messageBox.className = `message-box ${isError ? 'message-error' : 'message-success'}`;
+    messageBox.classList.remove('hidden');
+}
+
 // --- REGISTRATION LOGIC ---
 const registerForm = document.getElementById('register-form');
 if (registerForm) {
@@ -17,15 +27,17 @@ if (registerForm) {
                 body: JSON.stringify({ name, email, password })
             });
             const data = await res.json();
+
             if (data.success) {
                 localStorage.setItem('token', data.token);
-                alert('Registration successful!');
-                window.location.href = 'index.html';
+                showMessage('Registration successful! Redirecting...', false);
+                setTimeout(() => window.location.href = 'index.html', 1500);
             } else {
-                alert('Error: ' + (data.error || 'Registration failed'));
+                showMessage(data.error || 'Registration failed');
             }
         } catch (err) {
             console.error('Registration Error:', err);
+            showMessage('Connection error. Is the server running?');
         }
     });
 }
@@ -45,14 +57,17 @@ if (loginForm) {
                 body: JSON.stringify({ email, password })
             });
             const data = await res.json();
+
             if (data.success) {
                 localStorage.setItem('token', data.token);
-                window.location.href = 'index.html'; 
+                showMessage('Login successful! Redirecting...', false);
+                setTimeout(() => window.location.href = 'index.html', 1000); 
             } else {
-                alert(data.error || 'Invalid Credentials');
+                showMessage(data.error || 'Invalid Credentials');
             }
         } catch (err) {
             console.error('Login Error:', err);
+            showMessage('Server connection failed.');
         }
     });
 }
