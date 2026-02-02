@@ -1,4 +1,7 @@
-/* --- Global Reset & Body --- */
+* {
+    box-sizing: border-box; /* Applied globally for better layout control */
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
@@ -11,7 +14,7 @@ body {
 }
 
 /* --- Container Layouts --- */
-.pomodoro-app, .auth-container {
+.pomodoro-app, .auth-container, .error-page {
     background-color: #ffffff;
     padding: 30px;
     border-radius: 12px;
@@ -33,7 +36,7 @@ h1 {
     margin: 0;
 }
 
-/* --- Authentication Styles --- */
+/* --- Authentication & Form Styles --- */
 .auth-container h1 {
     margin-bottom: 20px;
 }
@@ -46,8 +49,14 @@ input[type="password"] {
     margin: 10px 0;
     border: 1px solid #ddd;
     border-radius: 6px;
-    box-sizing: border-box; /* Ensures padding doesn't affect width */
     font-size: 14px;
+}
+
+#task-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
 }
 
 .auth-container p {
@@ -64,16 +73,19 @@ input[type="password"] {
 /* --- Timer Mode Selector --- */
 .timer-mode-selector {
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
 }
 
 .timer-mode-selector button {
-    padding: 8px 15px;
-    margin: 5px;
+    padding: 8px 12px;
     border: none;
     border-radius: 6px;
     background-color: #ecf0f1;
     cursor: pointer;
     transition: background-color 0.3s;
+    font-size: 13px;
 }
 
 .timer-mode-selector button.active {
@@ -88,6 +100,7 @@ input[type="password"] {
     font-weight: bold;
     margin: 20px 0;
     color: #2c3e50;
+    font-variant-numeric: tabular-nums; /* Prevents numbers from jumping */
 }
 
 /* --- Buttons & Controls --- */
@@ -109,6 +122,8 @@ button:active {
     padding: 12px;
     width: 100%;
     font-weight: bold;
+    display: block;
+    text-decoration: none;
 }
 
 #start-btn {
@@ -153,21 +168,20 @@ button:active {
 .task-list h2 {
     font-size: 18px;
     color: #7f8c8d;
-}
-
-#add-task-form {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 #tasks-container {
     list-style: none;
     padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 #tasks-container li {
     display: flex;
     align-items: center;
-    padding: 10px 0;
+    padding: 8px 0;
     border-bottom: 1px solid #f9f9f9;
 }
 
@@ -179,6 +193,7 @@ button:active {
 #tasks-container li label {
     cursor: pointer;
     flex-grow: 1;
+    font-size: 15px;
 }
 
 /* --- State Classes --- */
@@ -191,7 +206,26 @@ button:active {
     color: #bdc3c7;
 }
 
-/* --- Visual Alert for Finish --- */
+/* --- 404 & Error Page --- */
+.error-page {
+    margin: auto; /* Centers in flex body */
+}
+
+.error-code {
+    font-size: 100px;
+    color: #c0392b;
+    margin: 0;
+    line-height: 1;
+}
+
+.btn-back {
+    margin-top: 20px;
+    display: inline-block;
+    width: auto;
+    padding: 10px 25px;
+}
+
+/* --- Animations --- */
 .time-up {
     animation: flash-red 1s infinite;
 }

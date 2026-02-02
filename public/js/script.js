@@ -161,3 +161,31 @@ function toggleControls(running) {
     document.getElementById('start-btn').classList.toggle('hidden', running);
     document.getElementById('pause-btn').classList.toggle('hidden', !running);
 }
+
+// --- Add Task Logic ---
+const addTaskForm = document.getElementById('add-task-form');
+const taskInput = document.getElementById('task-input');
+
+if (addTaskForm) {
+    addTaskForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const description = taskInput.value.trim();
+        if (!description) return;
+
+        // Send to backend
+        const data = await apiRequest('/tasks', {
+            method: 'POST',
+            body: JSON.stringify({ description })
+        });
+
+        if (data?.success) {
+            // Append the new task to the list
+            tasksContainer.appendChild(createTaskElement(data.data));
+            taskInput.value = ''; // Clear input
+            console.log(`[${new Date().toISOString()}] INFO: New task added via UI`);
+        } else {
+            alert(data.error || 'Failed to add task');
+        }
+    });
+}
