@@ -42,7 +42,7 @@ async function apiRequest(endpoint, options = {}) {
     }
 }
 
-// --- UI Helpers (Strict Security: No innerHTML) ---
+// --- UI Helpers (Secure DOM Manipulation) ---
 function updateDisplay() {
     const mins = Math.floor(timeRemaining / 60);
     const secs = timeRemaining % 60;
@@ -62,7 +62,7 @@ const createTaskElement = (task) => {
 
     const label = document.createElement('label');
     label.setAttribute('for', `task-${task._id}`);
-    label.textContent = task.description; // Securely set text
+    label.textContent = task.description; 
 
     checkbox.addEventListener('change', async (e) => {
         const data = await apiRequest(`/tasks/${task._id}`, {
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addTaskForm = document.getElementById('add-task-form');
     const taskInput = document.getElementById('task-input');
 
-    // 1. Initial Load
+    // 1. Initial Data Load
     updateDisplay();
     fetchTasks();
 
@@ -111,15 +111,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (ev) => alarmSound = new Audio(ev.target.result);
+            reader.onload = (ev) => {
+                alarmSound = new Audio(ev.target.result);
+                console.log("Custom alarm sound loaded.");
+            };
             reader.readAsDataURL(file);
         }
     });
 
     ['pomodoro', 'short-break', 'long-break'].forEach(id => {
-        document.getElementById(`input-${id}`).addEventListener('change', () => {
-            const key = id.replace(/-([a-z])/g, g => g[1].toUpperCase()); // convert short-break to shortBreak
-            TIME_SETTINGS[key] = (document.getElementById(`input-${id}`).value || 1) * 60;
+        document.getElementById(`input-${id}`).addEventListener('change', (e) => {
+            const key = id.replace(/-([a-z])/g, g => g[1].toUpperCase()); 
+            const minutes = parseInt(e.target.value) || 1;
+            TIME_SETTINGS[key] = minutes * 60;
             if (!isRunning) resetTimer();
         });
     });
@@ -143,7 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('clear-tasks-btn').addEventListener('click', clearCompletedTasks);
 
-    // 5. Mode Selectors
+    // 5. Auth & Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+    });
+
+    // 6. Mode Selectors
     ['pomodoro', 'shortBreak', 'longBreak'].forEach(mode => {
         const btnId = mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase()) + "-btn";
         const btn = document.getElementById(btnId);
@@ -164,17 +174,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleTimerComplete() {
         if (alarmSound) alarmSound.play();
+        
+        // Use the actual configured duration for session logging
         await apiRequest('/sessions', {
             method: 'POST',
-            body: JSON.stringify({ duration: TIME_SETTINGS[currentMode], type: currentMode })
+            body: JSON.stringify({ 
+                duration: TIME_SETTINGS[currentMode], 
+                type: currentMode 
+            })
         });
+        
+        alert(`${currentMode.charAt(0).toUpperCase() + currentMode.slice(1)} complete!`);
         resetTimer();
     }
 
     async function fetchTasks() {
         const data = await apiRequest('/tasks');
         if (data?.success) {
-            tasksContainer.textContent = ''; // Secure clear
+            tasksContainer.textContent = ''; 
             data.data.forEach(task => tasksContainer.appendChild(createTaskElement(task)));
         }
     }
@@ -186,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const task of completed) {
                 await apiRequest(`/tasks/${task._id}`, { method: 'DELETE' });
             }
-            fetchTasks();
+            fetchTasks(); // Refresh UI
         }
     }
 

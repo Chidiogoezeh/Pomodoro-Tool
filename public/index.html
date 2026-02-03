@@ -3,72 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pomodoro Timer</title>
+    <title>Pomodoro</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="pomodoro-app">
+    <div class="container">
         <header>
             <h1>Pomodoro</h1>
-            <button id="logout-btn" class="text-btn">Logout</button>
+            <button id="logout-btn" class="secondary-btn">Logout</button>
         </header>
 
-        <div class="timer-mode-selector">
-            <button id="pomodoro-btn" class="active">Pomodoro</button>
-            <button id="short-break-btn">Short Break</button>
-            <button id="long-break-btn">Long Break</button>
-        </div>
-
-        <div class="timer-display">
-            <span id="minutes">25</span>:<span id="seconds">00</span>
-        </div>
-
-        <div class="timer-controls">
-            <button id="start-btn" class="primary-btn">Start</button>
-            <button id="pause-btn" class="hidden">Pause</button>
-            <button id="reset-btn">Reset</button>
-        </div>
-
-        <hr>
-
-        <section class="task-section">
-            <div class="task-header">
-                <h2>My Tasks</h2>
-                <button id="clear-tasks-btn" class="secondary-btn">Clear Completed</button>
+        <main class="timer-section">
+            <div class="timer-mode-selector">
+                <button id="pomodoro-btn" class="active">Pomodoro</button>
+                <button id="short-break-btn">Short Break</button>
+                <button id="long-break-btn">Long Break</button>
             </div>
-            
-            <form id="add-task-form">
-                <input type="text" id="task-input" placeholder="What are you working on?" required>
-                <button type="submit" class="add-btn">+</button>
-            </form>
 
-            <ul id="tasks-container">
-                </ul>
-        </section>
+            <div class="timer-display">
+                <span id="minutes">25</span>:<span id="seconds">00</span>
+            </div>
 
-        <hr>
+            <div class="timer-controls">
+                <button id="start-btn" class="primary-btn">Start</button>
+                <button id="pause-btn" class="primary-btn hidden">Pause</button>
+                <button id="reset-btn" class="secondary-btn">Reset</button>
+            </div>
+        </main>
 
         <section class="timer-settings">
-            <h2>Settings</h2>
+            <h3>Timer Settings (Minutes)</h3>
             <div class="settings-grid">
                 <div class="input-group">
                     <label for="input-pomodoro">Focus</label>
                     <input type="number" id="input-pomodoro" value="25" min="1">
                 </div>
                 <div class="input-group">
-                    <label for="input-short-break">Short</label>
+                    <label for="input-short-break">Short Break</label>
                     <input type="number" id="input-short-break" value="5" min="1">
                 </div>
                 <div class="input-group">
-                    <label for="input-long-break">Long</label>
+                    <label for="input-long-break">Long Break</label>
                     <input type="number" id="input-long-break" value="15" min="1">
                 </div>
             </div>
             
             <div class="audio-settings">
-                <label for="alarm-upload">Custom Alarm Sound:</label>
+                <label for="alarm-upload">Upload Alarm Sound:</label>
                 <input type="file" id="alarm-upload" accept="audio/*">
             </div>
+        </section>
+
+        <hr>
+
+        <section class="task-section">
+            <div class="task-header">
+                <h2>Tasks</h2>
+                <button id="clear-tasks-btn" class="text-btn">Clear Completed</button>
+            </div>
+
+            <form id="add-task-form">
+                <input type="text" id="task-input" placeholder="What are you working on?" required>
+                <button type="submit" class="primary-btn">Add Task</button>
+            </form>
+
+            <ul id="tasks-container"></ul>
         </section>
     </div>
 
