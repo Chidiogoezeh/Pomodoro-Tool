@@ -47,7 +47,7 @@ export const updateTask = async (req, res, next) => {
             throw new Error('Task not found');
         }
 
-        // Make sure user owns the task
+        // Ownership check
         if (task.user.toString() !== req.user.id) {
             res.status(401);
             throw new Error('User not authorized to update this task');
@@ -58,6 +58,32 @@ export const updateTask = async (req, res, next) => {
 
         console.log(`[${new Date().toISOString()}] INFO: Task Updated: ${task._id}`);
         res.status(200).json({ success: true, data: task });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Delete a specific task
+// @route   DELETE /api/v1/tasks/:id
+export const deleteTask = async (req, res, next) => {
+    try {
+        const task = await Task.findById(req.params.id);
+        
+        if (!task) {
+            res.status(404);
+            throw new Error('Task not found');
+        }
+
+        // Ownership check
+        if (task.user.toString() !== req.user.id) {
+            res.status(401);
+            throw new Error('User not authorized to delete this task');
+        }
+
+        await task.deleteOne();
+        
+        console.log(`[${new Date().toISOString()}] INFO: Task Deleted: ${req.params.id}`);
+        res.status(200).json({ success: true, data: {} });
     } catch (error) {
         next(error);
     }
