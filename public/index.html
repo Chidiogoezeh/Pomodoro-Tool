@@ -10,7 +10,7 @@
     <div class="pomodoro-app">
         <header>
             <h1>Pomodoro</h1>
-            <button id="logout-btn">Logout</button>
+            <button id="logout-btn" class="text-btn">Logout</button>
         </header>
 
         <div class="timer-mode-selector">
@@ -29,12 +29,46 @@
             <button id="reset-btn">Reset</button>
         </div>
 
-        <section class="task-list">
-            <h2>My Tasks</h2>
+        <hr>
+
+        <section class="task-section">
+            <div class="task-header">
+                <h2>My Tasks</h2>
+                <button id="clear-tasks-btn" class="secondary-btn">Clear Completed</button>
+            </div>
+            
             <form id="add-task-form">
-                <input type="text" id="task-input" placeholder="What are you working on?">
+                <input type="text" id="task-input" placeholder="What are you working on?" required>
+                <button type="submit" class="add-btn">+</button>
             </form>
-            <ul id="tasks-container"></ul>
+
+            <ul id="tasks-container">
+                </ul>
+        </section>
+
+        <hr>
+
+        <section class="timer-settings">
+            <h2>Settings</h2>
+            <div class="settings-grid">
+                <div class="input-group">
+                    <label for="input-pomodoro">Focus</label>
+                    <input type="number" id="input-pomodoro" value="25" min="1">
+                </div>
+                <div class="input-group">
+                    <label for="input-short-break">Short</label>
+                    <input type="number" id="input-short-break" value="5" min="1">
+                </div>
+                <div class="input-group">
+                    <label for="input-long-break">Long</label>
+                    <input type="number" id="input-long-break" value="15" min="1">
+                </div>
+            </div>
+            
+            <div class="audio-settings">
+                <label for="alarm-upload">Custom Alarm Sound:</label>
+                <input type="file" id="alarm-upload" accept="audio/*">
+            </div>
         </section>
     </div>
 
