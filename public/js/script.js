@@ -78,7 +78,7 @@ const createTaskElement = (task) => {
     return li;
 };
 
-// --- Initialization & Event Listeners ---
+// --- Core Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     const tasksContainer = document.getElementById('tasks-container');
     const addTaskForm = document.getElementById('add-task-form');
@@ -87,11 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const alarmContainer = document.getElementById('alarm-status-container');
     const stopSoundBtn = document.getElementById('stop-sound-btn');
 
-    // 1. Initial Data Load
+    // 1. Initial Load
     updateDisplay();
     fetchTasks();
 
-    // 2. Timer Controls
+    // 2. Timer Event Listeners
     document.getElementById('start-btn').addEventListener('click', () => {
         if (!isRunning) {
             isRunning = true;
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('reset-btn').addEventListener('click', resetTimer);
 
-    // 3. Settings & Audio Logic
+    // 3. Audio & Settings Listeners
     document.getElementById('toggle-settings-btn').addEventListener('click', () => {
         settingsPanel.classList.toggle('hidden');
     });
@@ -117,11 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const focusMins = document.getElementById('input-pomodoro').value || 25;
         const breakMins = document.getElementById('input-break').value || 5;
         
-        TIME_SETTINGS.pomodoro = focusMins * 60;
-        TIME_SETTINGS.break = breakMins * 60;
+        TIME_SETTINGS.pomodoro = parseInt(focusMins) * 60;
+        TIME_SETTINGS.break = parseInt(breakMins) * 60;
         
         settingsPanel.classList.add('hidden');
-        resetTimer(); // Update display with new times
+        resetTimer();
     });
 
     document.getElementById('alarm-upload').addEventListener('change', (e) => {
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alarmContainer.classList.add('hidden');
     });
 
-    // 4. Task Management
+    // 4. Task Management Listeners
     if (addTaskForm) {
         addTaskForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('clear-tasks-btn').addEventListener('click', clearCompletedTasks);
 
-    // 5. Auth & Mode Selectors
+    // 5. Auth & Mode Switchers
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
         window.location.href = '/login.html';
@@ -175,25 +175,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) btn.addEventListener('click', () => switchMode(mode));
     });
 
-    // --- Logic Functions ---
+    // --- Logic Functions (Scoped inside DOMContentLoaded) ---
     function tick() {
         if (timeRemaining > 0) {
             timeRemaining--;
             updateDisplay();
         } else {
-            clearInterval(intervalId);
-            isRunning = false;
             handleTimerComplete();
         }
     }
 
     async function handleTimerComplete() {
-        // Trigger looping sound and show Stop button instead of alert
+        clearInterval(intervalId);
+        isRunning = false;
+
+        // Trigger Sound
         if (alarmSound) {
-            alarmSound.play();
             alarmContainer.classList.remove('hidden');
+            alarmSound.play().catch(err => console.error("Autoplay blocked:", err));
         }
         
+        // Log Session
         await apiRequest('/sessions', {
             method: 'POST',
             body: JSON.stringify({ 
@@ -201,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: currentMode 
             })
         });
+
         resetTimer();
     }
 
