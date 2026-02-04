@@ -16,35 +16,35 @@
         <main class="timer-section">
             <div class="timer-mode-selector">
                 <button id="pomodoro-btn" class="active">Pomodoro</button>
-                <button id="short-break-btn">Short Break</button>
-                <button id="long-break-btn">Long Break</button>
+                <button id="break-btn">Break</button>
             </div>
 
             <div class="timer-display">
                 <span id="minutes">25</span>:<span id="seconds">00</span>
             </div>
 
+            <div id="alarm-status-container" class="hidden">
+                <button id="stop-sound-btn" class="alarm-btn">Stop Sound</button>
+            </div>
+
             <div class="timer-controls">
                 <button id="start-btn" class="primary-btn">Start</button>
                 <button id="pause-btn" class="primary-btn hidden">Pause</button>
                 <button id="reset-btn" class="secondary-btn">Reset</button>
+                <button id="toggle-settings-btn" class="text-btn">Change Timer</button>
             </div>
         </main>
 
-        <section class="timer-settings">
-            <h3>Timer Settings (Minutes)</h3>
+        <section id="timer-settings" class="timer-settings hidden">
+            <h3>Adjust Timings (Minutes)</h3>
             <div class="settings-grid">
                 <div class="input-group">
                     <label for="input-pomodoro">Focus</label>
                     <input type="number" id="input-pomodoro" value="25" min="1">
                 </div>
                 <div class="input-group">
-                    <label for="input-short-break">Short Break</label>
-                    <input type="number" id="input-short-break" value="5" min="1">
-                </div>
-                <div class="input-group">
-                    <label for="input-long-break">Long Break</label>
-                    <input type="number" id="input-long-break" value="15" min="1">
+                    <label for="input-break">Break</label>
+                    <input type="number" id="input-break" value="5" min="1">
                 </div>
             </div>
             
@@ -52,6 +52,7 @@
                 <label for="alarm-upload">Upload Alarm Sound:</label>
                 <input type="file" id="alarm-upload" accept="audio/*">
             </div>
+            <button id="save-settings-btn" class="primary-btn">Set Changes</button>
         </section>
 
         <hr>
