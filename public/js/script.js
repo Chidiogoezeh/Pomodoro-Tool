@@ -1,8 +1,7 @@
 // --- Configuration & State ---
 let TIME_SETTINGS = {
     pomodoro: 25 * 60,
-    shortBreak: 5 * 60,
-    longBreak: 15 * 60
+    break: 5 * 60
 };
 
 const API_URL = '/api/v1';
@@ -84,6 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasksContainer = document.getElementById('tasks-container');
     const addTaskForm = document.getElementById('add-task-form');
     const taskInput = document.getElementById('task-input');
+    const settingsPanel = document.getElementById('timer-settings');
+    const alarmContainer = document.getElementById('alarm-status-container');
+    const stopSoundBtn = document.getElementById('stop-sound-btn');
 
     // 1. Initial Data Load
     updateDisplay();
@@ -106,26 +108,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('reset-btn').addEventListener('click', resetTimer);
 
-    // 3. Audio & Settings Listeners
+    // 3. Settings & Audio Logic
+    document.getElementById('toggle-settings-btn').addEventListener('click', () => {
+        settingsPanel.classList.toggle('hidden');
+    });
+
+    document.getElementById('save-settings-btn').addEventListener('click', () => {
+        const focusMins = document.getElementById('input-pomodoro').value || 25;
+        const breakMins = document.getElementById('input-break').value || 5;
+        
+        TIME_SETTINGS.pomodoro = focusMins * 60;
+        TIME_SETTINGS.break = breakMins * 60;
+        
+        settingsPanel.classList.add('hidden');
+        resetTimer(); // Update display with new times
+    });
+
     document.getElementById('alarm-upload').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (ev) => {
                 alarmSound = new Audio(ev.target.result);
-                console.log("Custom alarm sound loaded.");
+                alarmSound.loop = true;
+                console.log("Alarm sound loaded and looped.");
             };
             reader.readAsDataURL(file);
         }
     });
 
-    ['pomodoro', 'short-break', 'long-break'].forEach(id => {
-        document.getElementById(`input-${id}`).addEventListener('change', (e) => {
-            const key = id.replace(/-([a-z])/g, g => g[1].toUpperCase()); 
-            const minutes = parseInt(e.target.value) || 1;
-            TIME_SETTINGS[key] = minutes * 60;
-            if (!isRunning) resetTimer();
-        });
+    stopSoundBtn.addEventListener('click', () => {
+        if (alarmSound) {
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+        }
+        alarmContainer.classList.add('hidden');
     });
 
     // 4. Task Management
@@ -147,16 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('clear-tasks-btn').addEventListener('click', clearCompletedTasks);
 
-    // 5. Auth & Logout
+    // 5. Auth & Mode Selectors
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
         window.location.href = '/login.html';
     });
 
-    // 6. Mode Selectors
-    ['pomodoro', 'shortBreak', 'longBreak'].forEach(mode => {
-        const btnId = mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase()) + "-btn";
-        const btn = document.getElementById(btnId);
+    ['pomodoro', 'break'].forEach(mode => {
+        const btn = document.getElementById(`${mode}-btn`);
         if (btn) btn.addEventListener('click', () => switchMode(mode));
     });
 
@@ -173,9 +188,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleTimerComplete() {
-        if (alarmSound) alarmSound.play();
+        // Trigger looping sound and show Stop button instead of alert
+        if (alarmSound) {
+            alarmSound.play();
+            alarmContainer.classList.remove('hidden');
+        }
         
-        // Use the actual configured duration for session logging
         await apiRequest('/sessions', {
             method: 'POST',
             body: JSON.stringify({ 
@@ -183,8 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: currentMode 
             })
         });
-        
-        alert(`${currentMode.charAt(0).toUpperCase() + currentMode.slice(1)} complete!`);
         resetTimer();
     }
 
@@ -203,14 +219,14 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const task of completed) {
                 await apiRequest(`/tasks/${task._id}`, { method: 'DELETE' });
             }
-            fetchTasks(); // Refresh UI
+            fetchTasks(); 
         }
     }
 
     function switchMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.timer-mode-selector button').forEach(b => b.classList.remove('active'));
-        document.getElementById(`${mode.replace(/[A-Z]/g, m => "-" + m.toLowerCase())}-btn`).classList.add('active');
+        document.getElementById(`${mode}-btn`).classList.add('active');
         resetTimer();
     }
 
