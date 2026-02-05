@@ -9,7 +9,6 @@ let currentMode = 'pomodoro';
 let timeRemaining = TIME_SETTINGS[currentMode];
 let isRunning = false;
 let intervalId = null;
-let alarmSound = null;
 
 // --- Authorized Fetch Wrapper ---
 async function apiRequest(endpoint, options = {}) {
@@ -18,30 +17,26 @@ async function apiRequest(endpoint, options = {}) {
         window.location.href = '/login.html';
         return;
     }
-
     const defaultOptions = {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         }
     };
-
     try {
         const response = await fetch(`${API_URL}${endpoint}`, { ...defaultOptions, ...options });
-        
         if (response.status === 401) {
             localStorage.removeItem('token');
             window.location.href = '/login.html';
             return;
         }
-
         return await response.json();
     } catch (error) {
         console.error(`[${new Date().toISOString()}] FETCH ERROR:`, error);
     }
 }
 
-// --- UI Helpers (Secure DOM Manipulation) ---
+// --- UI Helpers (Strict Security: No innerHTML) ---
 function updateDisplay() {
     const mins = Math.floor(timeRemaining / 60);
     const secs = timeRemaining % 60;
@@ -53,26 +48,20 @@ function updateDisplay() {
 const createTaskElement = (task) => {
     const li = document.createElement('li');
     if (task.isCompleted) li.classList.add('completed');
-    
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = `task-${task._id}`;
     checkbox.checked = task.isCompleted;
-
     const label = document.createElement('label');
     label.setAttribute('for', `task-${task._id}`);
     label.textContent = task.description; 
-
     checkbox.addEventListener('change', async (e) => {
         const data = await apiRequest(`/tasks/${task._id}`, {
             method: 'PUT',
             body: JSON.stringify({ isCompleted: e.target.checked })
         });
-        if (data?.success) {
-            li.classList.toggle('completed', e.target.checked);
-        }
+        if (data?.success) li.classList.toggle('completed', e.target.checked);
     });
-
     li.appendChild(checkbox);
     li.appendChild(label);
     return li;
@@ -86,14 +75,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsPanel = document.getElementById('timer-settings');
     const alarmContainer = document.getElementById('alarm-status-container');
     const stopSoundBtn = document.getElementById('stop-sound-btn');
+    const alarmAudio = document.getElementById('alarm-audio'); // Target HTML element
 
-    // 1. Initial Load
     updateDisplay();
     fetchTasks();
 
-    // 2. Timer Event Listeners
+    // 1. Timer Event Listeners
     document.getElementById('start-btn').addEventListener('click', () => {
         if (!isRunning) {
+            // UNLOCK AUDIO: Play/Pause on user click to satisfy browser security
+            if (alarmAudio.src) {
+                alarmAudio.play().then(() => {
+                    alarmAudio.pause();
+                    alarmAudio.currentTime = 0;
+                }).catch(e => console.log("Audio waiting for first play permission"));
+            }
+            
             isRunning = true;
             intervalId = setInterval(tick, 1000);
             toggleControls(true);
@@ -108,18 +105,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('reset-btn').addEventListener('click', resetTimer);
 
-    // 3. Audio & Settings Listeners
+    // 2. Audio & Settings Listeners
     document.getElementById('toggle-settings-btn').addEventListener('click', () => {
         settingsPanel.classList.toggle('hidden');
     });
 
     document.getElementById('save-settings-btn').addEventListener('click', () => {
-        const focusMins = document.getElementById('input-pomodoro').value || 25;
-        const breakMins = document.getElementById('input-break').value || 5;
-        
-        TIME_SETTINGS.pomodoro = parseInt(focusMins) * 60;
-        TIME_SETTINGS.break = parseInt(breakMins) * 60;
-        
+        TIME_SETTINGS.pomodoro = (parseInt(document.getElementById('input-pomodoro').value) || 25) * 60;
+        TIME_SETTINGS.break = (parseInt(document.getElementById('input-break').value) || 5) * 60;
         settingsPanel.classList.add('hidden');
         resetTimer();
     });
@@ -129,23 +122,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file) {
             const reader = new FileReader();
             reader.onload = (ev) => {
-                alarmSound = new Audio(ev.target.result);
-                alarmSound.loop = true;
-                console.log("Alarm sound loaded and looped.");
+                alarmAudio.src = ev.target.result;
+                alarmAudio.load();
+                console.log("Audio source updated.");
             };
             reader.readAsDataURL(file);
         }
     });
 
     stopSoundBtn.addEventListener('click', () => {
-        if (alarmSound) {
-            alarmSound.pause();
-            alarmSound.currentTime = 0;
-        }
+        alarmAudio.pause();
+        alarmAudio.currentTime = 0;
         alarmContainer.classList.add('hidden');
     });
 
-    // 4. Task Management Listeners
+    // 3. Task Management
     if (addTaskForm) {
         addTaskForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -164,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('clear-tasks-btn').addEventListener('click', clearCompletedTasks);
 
-    // 5. Auth & Mode Switchers
+    // 4. Auth & Mode Switchers
     document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
         window.location.href = '/login.html';
@@ -175,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) btn.addEventListener('click', () => switchMode(mode));
     });
 
-    // --- Logic Functions (Scoped inside DOMContentLoaded) ---
+    // --- Internal Logic Functions ---
     function tick() {
         if (timeRemaining > 0) {
             timeRemaining--;
@@ -189,21 +180,16 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(intervalId);
         isRunning = false;
 
-        // Trigger Sound
-        if (alarmSound) {
+        // Trigger Audio
+        if (alarmAudio.src) {
             alarmContainer.classList.remove('hidden');
-            alarmSound.play().catch(err => console.error("Autoplay blocked:", err));
+            alarmAudio.play().catch(err => console.error("Playback failed:", err));
         }
         
-        // Log Session
         await apiRequest('/sessions', {
             method: 'POST',
-            body: JSON.stringify({ 
-                duration: TIME_SETTINGS[currentMode], 
-                type: currentMode 
-            })
+            body: JSON.stringify({ duration: TIME_SETTINGS[currentMode], type: currentMode })
         });
-
         resetTimer();
     }
 
@@ -229,7 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function switchMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.timer-mode-selector button').forEach(b => b.classList.remove('active'));
-        document.getElementById(`${mode}-btn`).classList.add('active');
+        const activeBtn = document.getElementById(`${mode}-btn`);
+        if (activeBtn) activeBtn.classList.add('active');
         resetTimer();
     }
 
