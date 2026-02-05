@@ -9,6 +9,7 @@ let currentMode = 'pomodoro';
 let timeRemaining = TIME_SETTINGS[currentMode];
 let isRunning = false;
 let intervalId = null;
+let objectURL = null; // Track blob URL to prevent memory leaks
 
 // --- Authorized Fetch Wrapper ---
 async function apiRequest(endpoint, options = {}) {
@@ -36,7 +37,7 @@ async function apiRequest(endpoint, options = {}) {
     }
 }
 
-// --- UI Helpers (Strict Security: No innerHTML) ---
+// --- UI Helpers ---
 function updateDisplay() {
     const mins = Math.floor(timeRemaining / 60);
     const secs = timeRemaining % 60;
@@ -75,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsPanel = document.getElementById('timer-settings');
     const alarmContainer = document.getElementById('alarm-status-container');
     const stopSoundBtn = document.getElementById('stop-sound-btn');
-    const alarmAudio = document.getElementById('alarm-audio'); // Target HTML element
+    const alarmAudio = document.getElementById('alarm-audio'); 
 
     updateDisplay();
     fetchTasks();
@@ -83,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Timer Event Listeners
     document.getElementById('start-btn').addEventListener('click', () => {
         if (!isRunning) {
-            // UNLOCK AUDIO: Play/Pause on user click to satisfy browser security
+            // UNLOCK AUDIO: Critical for browser security
             if (alarmAudio.src) {
                 alarmAudio.play().then(() => {
                     alarmAudio.pause();
@@ -117,16 +118,15 @@ document.addEventListener('DOMContentLoaded', () => {
         resetTimer();
     });
 
+    // BLOB FIX: Bypasses CSP and resource errors
     document.getElementById('alarm-upload').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                alarmAudio.src = ev.target.result;
-                alarmAudio.load();
-                console.log("Audio source updated.");
-            };
-            reader.readAsDataURL(file);
+            if (objectURL) URL.revokeObjectURL(objectURL);
+            objectURL = URL.createObjectURL(file);
+            alarmAudio.src = objectURL;
+            alarmAudio.load();
+            console.log("Audio Blob loaded.");
         }
     });
 
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) btn.addEventListener('click', () => switchMode(mode));
     });
 
-    // --- Internal Logic Functions ---
+    // --- Logic Functions ---
     function tick() {
         if (timeRemaining > 0) {
             timeRemaining--;
@@ -180,10 +180,13 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(intervalId);
         isRunning = false;
 
-        // Trigger Audio
-        if (alarmAudio.src) {
+        if (alarmAudio.src && alarmAudio.src !== "") {
             alarmContainer.classList.remove('hidden');
-            alarmAudio.play().catch(err => console.error("Playback failed:", err));
+            try {
+                await alarmAudio.play();
+            } catch (err) {
+                console.error("Playback failed:", err);
+            }
         }
         
         await apiRequest('/sessions', {
