@@ -73,6 +73,9 @@ input:focus {
     padding: 10px 20px;
     background-color: #ecf0f1;
     color: #7f8c8d;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
 }
 
 .timer-mode-selector button.active {
@@ -90,6 +93,39 @@ input:focus {
     font-variant-numeric: tabular-nums;
 }
 
+/* --- Buttons & Controls --- */
+.timer-controls {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: center;
+    gap: 10px;
+}
+
+#start-btn, #pause-btn, #reset-btn {
+    flex: 1; 
+    max-width: 150px; 
+    padding: 12px;
+    border-radius: 6px;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+#start-btn { background-color: #27ae60; color: white; }
+#pause-btn { background-color: #f39c12; color: white; }
+#reset-btn { background-color: #95a5a6; color: white; }
+
+.text-btn {
+    background: none;
+    color: #c0392b;
+    text-decoration: underline;
+    margin-top: 15px;
+    width: 100%; 
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
 /* --- Alarm & Stop Button --- */
 #alarm-status-container {
     margin-bottom: 15px;
@@ -102,6 +138,8 @@ input:focus {
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
+    border-radius: 6px;
+    border: none;
     animation: pulse 1.5s infinite;
 }
 
@@ -128,7 +166,7 @@ input:focus {
 
 .settings-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns for Focus and Break */
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
     margin-bottom: 15px;
 }
@@ -141,13 +179,37 @@ input:focus {
     text-align: left;
 }
 
-/* --- General Buttons --- */
-button {
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s;
+/* --- Task List Section --- */
+.task-header {
+    display: flex;
+    justify-content: space-between; /* Pushes Tasks left and Clear right */
+    align-items: center;            /* Aligns them on the same horizontal line */
+    margin-top: 25px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.task-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+/* Ensuring "Clear Completed" stays on the right and looks like a link */
+#clear-tasks-btn {
+    background: none;
     border: none;
-    border-radius: 6px;
+    color: #c0392b;
+    text-decoration: underline;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+}
+
+#add-task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
 }
 
 .primary-btn {
@@ -155,31 +217,17 @@ button {
     color: white;
     padding: 12px;
     width: 100%;
-}
-
-#start-btn { background-color: #27ae60; color: white; padding: 12px 30px; }
-#pause-btn { background-color: #f39c12; color: white; padding: 12px 30px; }
-#reset-btn { background-color: #95a5a6; color: white; padding: 12px 30px; }
-
-.text-btn {
-    background: none;
-    color: #c0392b;
-    text-decoration: underline;
-    margin-top: 10px;
-}
-
-/* --- Task List --- */
-.task-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 25px;
+    border-radius: 6px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 #tasks-container {
     list-style: none;
     padding: 0;
     text-align: left;
+    margin-top: 20px;
 }
 
 #tasks-container li {
@@ -190,6 +238,10 @@ button {
     display: flex;
     align-items: center;
     border-radius: 6px;
+}
+
+#tasks-container li input {
+    margin-right: 10px;
 }
 
 .completed label {
