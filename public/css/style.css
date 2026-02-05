@@ -30,6 +30,7 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    gap: 10px; /* Prevents Logout and Title from touching on narrow screens */
 }
 
 h1 {
@@ -38,16 +39,9 @@ h1 {
     font-size: 1.8rem;
 }
 
-h2, h3 {
-    color: #2c3e50;
-    margin-top: 0;
-}
-
 /* --- Form Styles --- */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"] {
+input[type="text"], input[type="email"], 
+input[type="password"], input[type="number"] {
     width: 100%;
     padding: 12px;
     margin: 8px 0;
@@ -103,11 +97,13 @@ input:focus {
 
 #start-btn, #pause-btn, #reset-btn {
     flex: 1; 
-    max-width: 150px; 
+    min-width: 120px; /* Ensures buttons don't get too tiny */
+    max-width: 160px; 
     padding: 12px;
     border-radius: 6px;
     border: none;
     font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -126,18 +122,12 @@ input:focus {
     font-size: 15px;
 }
 
-/* --- Alarm & Stop Button --- */
-#alarm-status-container {
-    margin-bottom: 15px;
-}
-
+/* --- Alarm & Pulse --- */
 .alarm-btn {
     background-color: #e74c3c;
     color: white;
     padding: 12px 25px;
     font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     border-radius: 6px;
     border: none;
     animation: pulse 1.5s infinite;
@@ -149,52 +139,16 @@ input:focus {
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
 }
 
-/* --- Timer Settings (Togglable) --- */
-.timer-settings {
-    margin: 20px 0;
-    padding: 20px;
-    background-color: #fff;
-    border: 2px solid #c0392b;
-    border-radius: 10px;
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.settings-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.input-group label {
-    display: block;
-    font-size: 12px;
-    margin-bottom: 5px;
-    color: #7f8c8d;
-    text-align: left;
-}
-
-/* --- Task List Section --- */
+/* --- Task Section --- */
 .task-header {
     display: flex;
-    justify-content: space-between; /* Pushes Tasks left and Clear right */
-    align-items: center;            /* Aligns them on the same horizontal line */
+    justify-content: space-between;
+    align-items: center;
     margin-top: 25px;
     border-top: 1px solid #eee;
     padding-top: 20px;
 }
 
-.task-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-/* Ensuring "Clear Completed" stays on the right and looks like a link */
 #clear-tasks-btn {
     background: none;
     border: none;
@@ -202,14 +156,6 @@ input:focus {
     text-decoration: underline;
     font-size: 14px;
     cursor: pointer;
-    padding: 0;
-}
-
-#add-task-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 15px;
 }
 
 .primary-btn {
@@ -223,31 +169,29 @@ input:focus {
     cursor: pointer;
 }
 
-#tasks-container {
-    list-style: none;
-    padding: 0;
-    text-align: left;
-    margin-top: 20px;
-}
-
 #tasks-container li {
     background: #fdfdfd;
     border: 1px solid #eee;
-    padding: 10px;
+    padding: 12px;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
     border-radius: 6px;
-}
-
-#tasks-container li input {
-    margin-right: 10px;
-}
-
-.completed label {
-    text-decoration: line-through;
-    color: #bdc3c7;
+    text-align: left;
 }
 
 /* --- Utilities --- */
 .hidden { display: none !important; }
+
+/* --- Responsiveness --- */
+@media (max-width: 480px) {
+    .timer-display { font-size: 65px; }
+    
+    /* On mobile, we ensure the visible pair (Start/Reset or Pause/Reset) fill the space */
+    #start-btn, #pause-btn, #reset-btn {
+        flex: 1 1 40%; 
+        max-width: none;
+    }
+    
+    .settings-grid { grid-template-columns: 1fr; }
+}
