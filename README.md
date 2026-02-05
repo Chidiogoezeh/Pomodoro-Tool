@@ -1,32 +1,32 @@
 Pomodoro Tool
 
-A professional, full-stack productivity application built with the MERN stack (MongoDB, Express, Node.js, and Vanilla JS). This tool features secure user authentication, persistent task management, and automated session logging to help users stay focused and track their progress.
+A professional, full-stack productivity application built with the MERN stack. This tool balances a "Security First" backend architecture with a seamless, zero-dependency frontend experience. It features persistent task management, automated session logging, and custom user-defined audio alerts.
 
 Key Features
 
 Secure Authentication: User registration and login powered by JWT (JSON Web Tokens) and bcryptjs password hashing.
 
-Production Security: Integrated Helmet.js for secure HTTP headers and strictly configured CORS policies.
+Production Security: Hardened with Helmet.js to manage strict Content Security Policies (CSP) and secure HTTP headers.
 
-Smart Timer: Automated cycling between Pomodoro (25m), Short Break (5m), and Long Break (15m) modes.
+Dynamic Timer: Customizable Focus and Break intervals with a togglable settings panel to minimize UI clutter.
 
-Validated Data: Strict input validation using express-validator to prevent XSS and NoSQL Injection attacks.
+Custom Audio Alerts: User-uploaded alarm sounds powered by the HTML5 File & Audio APIs; specifically engineered to bypass modern browser autoplay restrictions.
 
-Task Management: Private, user-specific task lists with persistent database storage (CRUD functionality).
+Task Management: Private, user-specific task lists with persistent storage and a "Clear Completed" utility.
 
-Global Error Handling: Standardized API responses and logging with timestamps.
+Zero innerHTML: Strictly adheres to secure DOM manipulation practices to prevent XSS.
 
 Tech Stack
 
-Component,  Technology,                             Role
+Component,  Technology,                     Role
 
-Front-End,  "HTML5, Vanilla CSS, ES6 JavaScript",   Zero-dependency UI; secure DOM manipulation (No innerHTML).
+Front-End,  "HTML5, Vanilla CSS, ES6 JS",   Lightweight UI; secure DOM manipulation.
 
-Back-End,   "Node.js (ES6 Modules), Express.js",    Modular API architecture with secure routing and global error handling.
+Back-End,   "Node.js, Express.js",          Modular API with secure routing & global error handling.
 
-Security,   "JWT, Bcrypt, Helmet, Express-Validator",Protects user data and prevents common web vulnerabilities (OWASP Top 10).
+Security,   "JWT, Bcrypt, Helmet",          Protects user data and hardens HTTP headers.
 
-Database,   MongoDB & Mongoose,                     "Document-based storage for Users, Tasks, and Sessions."
+Database,   MongoDB & Mongoose,             "Persistent storage for Users, Tasks, and Sessions."
 
 
 Project Structure
@@ -34,36 +34,27 @@ Project Structure
 The project follows a clean, root-level modular architecture to ensure scalability and ease of maintenance:
 
 pomodoro-tool/
+├── controllers/         # Business logic (Auth, Tasks, Sessions)
+├── middleware/          # JWT Protection, Validation, & Helmet CSP config
+├── models/              # Mongoose Schemas (User, Task, Session)
+├── public/              # Static Assets
+│   ├── css/             # Modern Vanilla CSS with Grid & Flexbox
+│   ├── js/              # ES6 Logic (authUi.js, script.js)
+│   └── index.html       # Single Page Application Dashboard
+├── routes/              # API Endpoint definitions
+├── server.js            # Production entry point & Security Middleware
+└── .env                 # Secrets & Environment Configuration
 
-├── config/             # Database connection (Mongoose)
+Security and The Audio Challenge
 
-├── controllers/        # Business logic (Auth, Tasks, Sessions)
+One of the most significant technical hurdles in this project was implementing User-Uploaded Audio while maintaining a strict Content Security Policy (CSP).
 
-├── middleware/         # JWT Protection, Validation, & Error handling
+Audio Priming: To bypass browser autoplay blocks, the application uses an "Audio Priming" technique. The audio context is "unlocked" via a user gesture (clicking the Start button), allowing the alarm to trigger automatically when the timer expires.
 
-├── models/             # Mongoose Schemas (User, Task, Session)
+CSP Configuration: The backend is specifically configured via Helmet.js to allow blob: and data: URIs, enabling users to play local files without compromising the overall security of the application.
 
-├── public/             # Static Assets (Client-Side)
+Data Integrity: All inputs are sanitized; passwords are salted/hashed 10 times; and API responses follow a standardized JSON format.
 
-│   ├── css/            # Modern Vanilla CSS
-
-│   ├── js/             # ES6 Logic (authUi.js, script.js)
-
-│   ├── login.html      # Authentication View
-
-│   ├── register.html   # Registration View
-
-│   ├── 404.html        # Custom Error View
-
-│   └── index.html      # Protected Dashboard View
-
-├── routes/             # API Endpoint definitions
-
-├── .env                # Secrets & Environment Configuration
-
-├── server.js           # Production entry point
-
-└── package.json        # Dependencies & ES6 Module config
 
 Installation & Setup
 
@@ -92,9 +83,13 @@ npm install
 Create a .env file in the root directory and add the following:
 
 PORT=5000
+
 MONGO_URI=your_mongodb_connection_string
+
 JWT_SECRET=your_super_secret_jwt_key
+
 FRONTEND_URL=http://localhost:5000
+
 NODE_ENV=development
 
 4. Running the Application
@@ -105,39 +100,23 @@ Production: npm start
 
 Access the app at: http://localhost:5000
 
-Security Implementations
-
-This application is built with a Security First mindset:
-
-JWT Protection: All Task and Session routes are private and require a valid Bearer token.
-
-Password Hashing: Passwords are salted and hashed 10 times before storage.
-
-Data Sanitization: Mongoose Schemas and Express-Validator ensure data integrity.
-
-Global Error Handling: Prevents leaking sensitive server information in error stacks.
-
-No Inline Scripts: Adheres to strict Content Security Policy (CSP) guidelines.
-
 API Endpoints
 
 Auth
 
 POST /api/v1/auth/register - Register a new user.
 
-POST /api/v1/auth/login - Login and receive a JWT.
+POST /api/v1/auth/login - Login & receive JWT.
 
 Tasks
+GET /api/v1/tasks - Fetch user-specific tasks.
 
-GET /api/v1/tasks - Get all tasks for the logged-in user.
+POST /api/v1/tasks - Create a task.
 
-POST /api/v1/tasks - Create a new task.
-
-PUT /api/v1/tasks/:id - Update task completion status.
+DELETE /api/v1/tasks/:id - Remove a task.
 
 Sessions
-
-POST /api/v1/sessions - Log a completed focus/break session.
+POST /api/v1/sessions - Log focus/break completion.
 
 Contributing
 
