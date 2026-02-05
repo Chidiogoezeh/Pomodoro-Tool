@@ -9,7 +9,7 @@ let currentMode = 'pomodoro';
 let timeRemaining = TIME_SETTINGS[currentMode];
 let isRunning = false;
 let intervalId = null;
-let objectURL = null; // Track blob URL to prevent memory leaks
+let objectURL = null; 
 
 // --- Authorized Fetch Wrapper ---
 async function apiRequest(endpoint, options = {}) {
@@ -70,6 +70,7 @@ const createTaskElement = (task) => {
 
 // --- Core Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
     const tasksContainer = document.getElementById('tasks-container');
     const addTaskForm = document.getElementById('add-task-form');
     const taskInput = document.getElementById('task-input');
@@ -81,15 +82,15 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDisplay();
     fetchTasks();
 
-    // 1. Timer Event Listeners
+    // 1. Timer Controls
     document.getElementById('start-btn').addEventListener('click', () => {
         if (!isRunning) {
-            // UNLOCK AUDIO: Critical for browser security
-            if (alarmAudio.src) {
+            // Unlock audio
+            if (alarmAudio && alarmAudio.src) {
                 alarmAudio.play().then(() => {
                     alarmAudio.pause();
                     alarmAudio.currentTime = 0;
-                }).catch(e => console.log("Audio waiting for first play permission"));
+                }).catch(e => console.log("Audio ready for completion."));
             }
             
             isRunning = true;
@@ -106,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('reset-btn').addEventListener('click', resetTimer);
 
-    // 2. Audio & Settings Listeners
+    // 2. Audio & Settings
     document.getElementById('toggle-settings-btn').addEventListener('click', () => {
         settingsPanel.classList.toggle('hidden');
     });
@@ -118,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         resetTimer();
     });
 
-    // BLOB FIX: Bypasses CSP and resource errors
     document.getElementById('alarm-upload').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -136,37 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alarmContainer.classList.add('hidden');
     });
 
-    // 3. Task Management
-    if (addTaskForm) {
-        addTaskForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const description = taskInput.value.trim();
-            if (!description) return;
-            const data = await apiRequest('/tasks', {
-                method: 'POST',
-                body: JSON.stringify({ description })
-            });
-            if (data?.success) {
-                tasksContainer.appendChild(createTaskElement(data.data));
-                taskInput.value = '';
-            }
-        });
-    }
-
-    document.getElementById('clear-tasks-btn').addEventListener('click', clearCompletedTasks);
-
-    // 4. Auth & Mode Switchers
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
-    });
-
-    ['pomodoro', 'break'].forEach(mode => {
-        const btn = document.getElementById(`${mode}-btn`);
-        if (btn) btn.addEventListener('click', () => switchMode(mode));
-    });
-
-    // --- Logic Functions ---
+    // 3. Logic Functions
     function tick() {
         if (timeRemaining > 0) {
             timeRemaining--;
@@ -180,12 +150,15 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(intervalId);
         isRunning = false;
 
-        if (alarmAudio.src && alarmAudio.src !== "") {
-            alarmContainer.classList.remove('hidden');
+        // Show STOP button immediately
+        alarmContainer.classList.remove('hidden');
+
+        // Play Sound
+        if (alarmAudio && alarmAudio.src) {
             try {
                 await alarmAudio.play();
             } catch (err) {
-                console.error("Playback failed:", err);
+                console.error("Playback blocked:", err);
             }
         }
         
@@ -196,6 +169,28 @@ document.addEventListener('DOMContentLoaded', () => {
         resetTimer();
     }
 
+    function switchMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.timer-mode-selector button').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById(`${mode}-btn`);
+        if (btn) btn.classList.add('active');
+        resetTimer();
+    }
+
+    function resetTimer() {
+        clearInterval(intervalId);
+        isRunning = false;
+        timeRemaining = TIME_SETTINGS[currentMode];
+        toggleControls(false);
+        updateDisplay();
+    }
+
+    function toggleControls(running) {
+        document.getElementById('start-btn').classList.toggle('hidden', running);
+        document.getElementById('pause-btn').classList.toggle('hidden', !running);
+    }
+
+    // 4. Task & Auth Management
     async function fetchTasks() {
         const data = await apiRequest('/tasks');
         if (data?.success) {
@@ -215,24 +210,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function switchMode(mode) {
-        currentMode = mode;
-        document.querySelectorAll('.timer-mode-selector button').forEach(b => b.classList.remove('active'));
-        const activeBtn = document.getElementById(`${mode}-btn`);
-        if (activeBtn) activeBtn.classList.add('active');
-        resetTimer();
+    if (addTaskForm) {
+        addTaskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const description = taskInput.value.trim();
+            if (!description) return;
+            const data = await apiRequest('/tasks', {
+                method: 'POST',
+                body: JSON.stringify({ description })
+            });
+            if (data?.success) {
+                tasksContainer.appendChild(createTaskElement(data.data));
+                taskInput.value = '';
+            }
+        });
     }
 
-    function resetTimer() {
-        clearInterval(intervalId);
-        isRunning = false;
-        timeRemaining = TIME_SETTINGS[currentMode];
-        toggleControls(false);
-        updateDisplay();
-    }
+    document.getElementById('clear-tasks-btn').addEventListener('click', clearCompletedTasks);
 
-    function toggleControls(running) {
-        document.getElementById('start-btn').classList.toggle('hidden', running);
-        document.getElementById('pause-btn').classList.toggle('hidden', !running);
-    }
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+    });
+
+    ['pomodoro', 'break'].forEach(mode => {
+        const btn = document.getElementById(`${mode}-btn`);
+        if (btn) btn.addEventListener('click', () => switchMode(mode));
+    });
 });
