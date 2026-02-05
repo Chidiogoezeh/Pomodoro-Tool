@@ -15,7 +15,22 @@ connectDB();
 
 const app = express();
 
-app.use(helmet());
+// --- SECURE HELMET CONFIGURATION ---
+// This single block replaces both of your previous helmet calls
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        // Allow the browser to load audio from uploaded files (blobs/data)
+        "media-src": ["'self'", "data:", "blob:"],
+        // Ensuring scripts from our own server can run
+        "script-src": ["'self'"],
+      },
+    },
+  })
+);
+
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5000' }));
 app.use(express.json());
 app.use(express.static('public'));
